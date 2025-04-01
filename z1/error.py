@@ -1,6 +1,7 @@
 import numpy as np
 from hMatrix import hMatrix as H
 
+
 # sprawdzanie wystąpienia pojedynczego błędu
 # porównujemy wektor błędu do kolejnych kolumn,
 # w przypadku znalezienia wektora zwracamy numer kolumny, na której wystąpił pojedynczy błąd
@@ -13,6 +14,7 @@ def singleErrorCheck(E):
             return i
     else:
         return None
+
 
 # sprawdzanie wystąpienia pojedynczego błędu
 # porównujemy wektor błędu do sumy kolejnych kombinacji dwóch kolumn,
@@ -32,6 +34,7 @@ def doubleErrorCheck(E):
     else:
         return None
 
+
 # poprawianie błędu
 # na początku wyliczamy wektor błędu. Jeśli jest on zerowy, to nie ma błędu.
 # w przeciwnym razie, badamy wystąpienie pojedynczego lub podwójnego błędu transmisji.
@@ -43,11 +46,11 @@ def errorCorrector(corruptedMessage):
     else:
         errorPosition = singleErrorCheck(errorVector)
         if errorPosition is not None:
-            corruptedMessage[errorPosition] ^= 1 # zmiana wartości bitu przy wykorzystaniu operatora XOR
+            corruptedMessage[errorPosition] ^= 1  # zmiana wartości bitu przy wykorzystaniu operatora XOR
         else:
             errorPosition = doubleErrorCheck(errorVector)
             if errorPosition is not None:
-                corruptedMessage[errorPosition[0]] ^= 1 # zmiana wartości bitu przy wykorzystaniu operatora XOR
-                corruptedMessage[errorPosition[1]] ^= 1 # zmiana wartości bitu przy wykorzystaniu operatora XOR
+                corruptedMessage[errorPosition[0]] ^= 1  # zmiana wartości bitu przy wykorzystaniu operatora XOR
+                corruptedMessage[errorPosition[1]] ^= 1  # zmiana wartości bitu przy wykorzystaniu operatora XOR
             else:
                 print("Nie udało się naprawić błędu transmisyjnego!")

@@ -7,8 +7,10 @@ print("Podaj ciąg 8-bitowy do zakodowania: ")
 
 while True:
     mes = str(input())
-    if messageVerification(mes, 0): break
-    else: print("Błędna wiadomość, spróbuj ponownie")
+    if messageVerification(mes, 0):
+        break
+    else:
+        print("Błędna wiadomość, spróbuj ponownie")
 
 message = np.array([int(bit) for bit in mes])  # konwersja bitów do tablicy numpy
 
@@ -22,8 +24,10 @@ print("Imitacja błędu transmisyjnego - podaj 16-bitową wiadomość. "
 
 while True:
     mes = str(input())
-    if messageVerification(mes, 1): break
-    else: print("Błędna wiadomość, spróbuj ponownie")
+    if messageVerification(mes, 1):
+        break
+    else:
+        print("Błędna wiadomość, spróbuj ponownie")
 
 corruptedMessage = np.array([int(bit) for bit in mes])
 print(f"{corruptedMessage} - otrzymano taką wiadomość")

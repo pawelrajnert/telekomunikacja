@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # Weryfikacja wprowadzonej wiadomości, czy na pewno jest ciągiem bitów
 # encoded - parametr, który przyjmuje wartość 0 lub 1.
 # dla 0 - otrzymana wiadomość ma mieć długość 8 + 0*8 = 8
@@ -13,6 +14,7 @@ def messageVerification(mes, encoded):
         return True
     return False
 
+
 # konwersja wiadomości z postaci stringa do postaci binarnej
 # dzieje sie to na takiej zasadzie, że sprawdzamy kod ascii znaku, i go przekształcamy na postać binarną
 # i zwracamy to jako tablicę numpy, zawierającą binarne wektory odpowiednich znaków
@@ -24,6 +26,7 @@ def messageConverterToBinary(mes):
         ) for i in range(len(mes))
         ])
     return binaryVector
+
 
 # dekodowanie wiadomości - przekształcamy wektor binarny na kod ascii i na tej podstawie odkodowujemy pojedynczy znak
 

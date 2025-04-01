@@ -4,7 +4,7 @@ from hMatrix import hMatrix as H
 
 unikaty = set()
 for i in range(H.shape[1]):
-    kolumna = H[:,i]
+    kolumna = H[:, i]
     unikaty.add(tuple(kolumna))
     for j in range(i + 1, H.shape[1]):
         suma = H[:, i] + H[:, j]
