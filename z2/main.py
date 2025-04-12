@@ -60,6 +60,29 @@ def algorytmCRC(blokWiadomosci):
     return crc
 
 
+# funkcja dopełniająca wiadomość do pełnych 128 bajtów (lub wielokrotności)
+def rowneBloki(calaWiadomosc):
+    blokiDoDopelnienia = len(calaWiadomosc) % 128  # sprawdzamy ile bajtow brakuje nam co pełnych 128 lub wielokrotności
+
+    if blokiDoDopelnienia != 0:
+        ileDopelnic = 128 - blokiDoDopelnienia  # dopelniamy spacjami do pelnych bajtow
+        calaWiadomosc += b'\x32' * ileDopelnic
+
+    return calaWiadomosc
+
+
+# funkcja podziału wiadomości na bloki o rozmiarze 128 bajtow
+def podzielWiadomosc(calaWiadomosc):
+    calaWiadomosc = rowneBloki(calaWiadomosc)  # najpierw dopełniamy bloki do pełnych 128 bajtów
+    blokiWiadomosci = []
+
+    for i in range(0, len(calaWiadomosc), 128):  # sprawdzamy i dzielimy wiadomosc na 128 bajtowe bloki
+        blok = blokiWiadomosci[i:i + 128]  # bierzemy każdy blok 128 bajtów
+        blokiWiadomosci.append(blok)  # i dodajemy go do tablicy
+
+    return blokiWiadomosci
+
+
 # menu programu
 while 1:
     print("Wybierz co chcesz zrobić: ")
