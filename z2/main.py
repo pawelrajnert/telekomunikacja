@@ -1,3 +1,6 @@
+import serial
+import time
+
 # definicje znaków sterujących zgodnie z instrukcją
 SOH = 0x01
 EOT = 0x04
@@ -7,6 +10,28 @@ CAN = 0x18
 C = 0x43
 
 print("Implementacja protokołu xModem")
+
+def wybierzPort():
+    wyborPortu = 0
+
+    while wyborPortu not in (1, 2):
+        print("Wybierz port na którym chcesz działać: ")
+        print("1) Port COM10")
+        print("2) Port COM11")
+        try:
+            wyborPortu = int(input("Wybór: "))
+        except ValueError:
+            print("Podano niepoprawną wartość. Spróbuj ponownie.")
+            continue
+
+        if wyborPortu == 1:
+            port = "COM10"
+        elif wyborPortu == 2:
+            port = "COM11"
+        else:
+            print("Wybrano niepoprawną opcję, spróbuj jeszcze raz.")
+
+    return port
 
 
 # wybor sumy kontrolnej/algorytmu CRC przez użytkownika
@@ -66,7 +91,7 @@ def rowneBloki(calaWiadomosc):
 
     if blokiDoDopelnienia != 0:
         ileDopelnic = 128 - blokiDoDopelnienia  # dopelniamy spacjami do pelnych bajtow
-        calaWiadomosc += b'\x32' * ileDopelnic
+        calaWiadomosc += ' ' * ileDopelnic
 
     return calaWiadomosc
 
@@ -83,8 +108,58 @@ def podzielWiadomosc(calaWiadomosc):
     return blokiWiadomosci
 
 
+def wyslijWiadomosc(port, calaWiadomosc, typSumyKontrolnej):
+    bloki = podzielWiadomosc(calaWiadomosc)
+
+    waitForConnection = time.time()
+    receivedSignal = None
+
+    while waitForConnection - time.time() < 60:
+        if port.in_waiting > 0: # jeśli w buforze znajdzie się jakaś dana (bajt)
+            inBufferSignal = port.read(1) # odczytujemy ten bajt
+            if inBufferSignal in [NAK, C]: # jeśli jest to NAK lub C, to wychodzimy z pętli
+                # NAK - suma kontrolna, C - suma kontrolna z algorytmem CRC
+                receivedSignal = inBufferSignal
+                break
+        time.sleep(1)
+
+    if receivedSignal is None:
+         print("Nie otrzymano oczekiwanej odpowiedzi NAK lub C.")
+
+    else:
+        print("Otrzymano oczekiwany komunikat: ", receivedSignal)
+
+
+
+def odbierzWiadomosc(port, typSumyKontrolnej):
+    waitForConnection = time.time()
+    receivedSignal = None
+
+    while waitForConnection - time.time() < 60:
+        if port.in_waiting > 0:
+            inBufferSignal = port.read(1)
+            if inBufferSignal in [SOH]:
+                receivedSignal = inBufferSignal
+                break
+        time.sleep(1)
+
+    if receivedSignal is None:
+        print("Nie otrzymano oczekiwanej odpowiedzi SOH, zakończono oczekiwanie.")
+
+    else:
+        print("Otrzymano komunikat: ", receivedSignal)
+
+
+
 # menu programu
 while 1:
+    port = wybierzPort() # w pythonie wybieramy port np COM10, a w teraterm ten drugi COM11 lub odwrotnie
+    try:
+        serialPort = serial.Serial(port, 9600, timeout=10) # wybieramy dany port, predkosc 9600 baud (domyślna i rekomendowana)
+        print("Poprawnie połączono z portem.")
+    except serial.SerialException as e:
+        print(e)
+
     print("Wybierz co chcesz zrobić: ")
     print("1) Odbierz wiadomość")
     print("2) Wyślij wiadomość")
@@ -95,18 +170,26 @@ while 1:
         suma = wyborSumyKontrolnej()
         if suma == True:
             print("Wybrano sumę kontrolną.")
+            odbierzWiadomosc(serialPort, suma)
         if suma == False:
             print("Wybrano algorytm CRC")
+            odbierzWiadomosc(serialPort, suma)
 
     elif menu == 2:
         print("Wybrano wysyłanie wiadomości.")
         suma = wyborSumyKontrolnej()
         if suma == True:
             print("Wybrano sumę kontrolną.")
+            calaWiadomosc = input("Wprowadź wiadomość do wysłania: ")
+            wyslijWiadomosc(serialPort, calaWiadomosc, suma)
+
         if suma == False:
             print("Wybrano algorytm CRC")
+            calaWiadomosc = input("Wprowadź wiadomość do wysłania: ")
+            wyslijWiadomosc(serialPort, calaWiadomosc, suma)
 
     else:
         print("Wybrano niepoprawną opcję, spróbuj jeszcze raz.")
 
+    serialPort.close()
     input("Aby kontynuować, naciśnij enter")
