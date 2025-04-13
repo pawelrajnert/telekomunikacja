@@ -4,7 +4,17 @@ EOT = b'\x04'
 ACK = b'\x06'
 NAK = b'\x15'
 CAN = b'\x18'
-C   = b'C'
+C = b'C'
+
+znakiSterujace = {
+    b'\x01': "SOH",
+    b'\x04': "EOT",
+    b'\x06': "ACK",
+    b'\x15': "NAK",
+    b'\x18': "CAN",
+    b'C': "C"
+}
+
 
 def wybierzPort():
     wyborPortu = 0
@@ -21,8 +31,10 @@ def wybierzPort():
 
         if wyborPortu == 1:
             port = "COM10"
+
         elif wyborPortu == 2:
             port = "COM11"
+
         else:
             print("Wybrano niepoprawną opcję, spróbuj jeszcze raz.")
 
@@ -39,9 +51,11 @@ def wyborSumyKontrolnej():
         if wybor == 1:
             print("Wybrano sumę kontrolną.")
             return True
+
         elif wybor == 2:
             print("Wybrano algorytm CRC.")
             return False
+
         else:
             print("Wybrano niepoprawną opcję, spróbuj jeszcze raz.")
 
@@ -60,8 +74,10 @@ def wyborOperacji():
 # np. suma znaków to 312 > 256 zatem odejmujemy 256 i wychodzi nam suma kontrolna 56
 def sumaKontrolna(blokWiadomosci):
     suma = sum(blokWiadomosci)
+
     while suma > 256:
         suma -= 256
+
     return suma
 
 
@@ -107,4 +123,3 @@ def podzielWiadomosc(calaWiadomosc):
         blokiWiadomosci.append(blok)  # i dodajemy go do tablicy
 
     return blokiWiadomosci
-
