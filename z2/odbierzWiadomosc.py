@@ -14,7 +14,6 @@ from metodyPomocnicze import *
 # - CAN — otrzymano nieoczekiwany komunikat/nie zgadza się nrBloku/nrDopełnienia — anulujemy transmisję.
 # Jeśli natomiast zamiast SOH odczytamy EOT, to odpowiadamy odbiorcy ACK, by zakończyć transmisję.
 
-
 def odbierzWiadomosc(port):
     waitForConnection = time.time()             # czas początkowy
     receivedSignal = None                       # odebrane sygnały
@@ -45,9 +44,11 @@ def odbierzWiadomosc(port):
             elif inBufferSignal == CAN:
                 print("Transmisja została anulowana przez nadawcę!")
                 port.write(CAN)
+                port.write(CAN)
                 return
             else:
                 print("Anuluję transmisję, otrzymano nieoczekiwany komunikat: " + str(inBufferSignal))
+                port.write(CAN)
                 port.write(CAN)
                 return
 
@@ -95,6 +96,7 @@ def odbierzWiadomosc(port):
 
     if błądTransmisji[0]:           # z jakiegoś powodu musimy anulować transmisję
         print("Anuluję transmisję: " + błądTransmisji[1])
+        port.write(CAN)
         port.write(CAN)
     else:       # tylko w wypadku, gdy otrzymaliśmy EOT
         print("Przesyłam komunikat ACK, by zakończyć transmisję")

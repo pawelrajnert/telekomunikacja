@@ -41,9 +41,11 @@ def wyslijWiadomosc(port, calaWiadomosc):
     elif receivedSignal == C and typSumyKontrolnej:     # weryfikujemy zgodność co do oczekiwań
         print("Odbiorca oczekuje CRC, a wskazano sumę kontrolną - anuluję transmisję.")
         port.write(CAN)
+        port.write(CAN)
         return
     elif receivedSignal == NAK and not typSumyKontrolnej:    # weryfikujemy zgodność co do oczekiwań
         print("Odbiorca oczekuje sumy kontrolnej, a wskazano CRC - anuluję transmisję.")
+        port.write(CAN)
         port.write(CAN)
         return
     else:
@@ -74,6 +76,7 @@ def wyslijWiadomosc(port, calaWiadomosc):
                     port.write(pakiet)          # ponowne wysłanie bloku
                 elif receivedSignal == CAN:     # anulowanie transmisji
                     print("Odbiorca anulował transmisję (CAN)...")
+                    port.write(CAN)
                     port.write(CAN)
                     return
                 else: print("Odbiorca odpowiedział nieoczekiwanie: " + str(receivedSignal)) # dla nieoczekiwanych komunikatów

@@ -107,3 +107,4 @@ def podzielWiadomosc(calaWiadomosc):
         blokiWiadomosci.append(blok)  # i dodajemy go do tablicy
 
     return blokiWiadomosci
+
