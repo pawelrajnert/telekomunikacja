@@ -2,12 +2,12 @@ import serial
 import time
 
 # definicje znaków sterujących zgodnie z instrukcją
-SOH = 0x01
-EOT = 0x04
-ACK = 0x06
-NAK = 0x15
-CAN = 0x18
-C = 0x43
+SOH = b'\x01'
+EOT = b'\x04'
+ACK = b'\x06'
+NAK = b'\x15'
+CAN = b'\x18'
+C   = b'C'
 
 print("Implementacja protokołu xModem")
 
@@ -102,7 +102,7 @@ def podzielWiadomosc(calaWiadomosc):
     blokiWiadomosci = []
 
     for i in range(0, len(calaWiadomosc), 128):  # sprawdzamy i dzielimy wiadomosc na 128 bajtowe bloki
-        blok = blokiWiadomosci[i:i + 128]  # bierzemy każdy blok 128 bajtów
+        blok = calaWiadomosc[i:i + 128]  # bierzemy każdy blok 128 bajtów
         blokiWiadomosci.append(blok)  # i dodajemy go do tablicy
 
     return blokiWiadomosci
@@ -113,8 +113,7 @@ def wyslijWiadomosc(port, calaWiadomosc, typSumyKontrolnej):
 
     waitForConnection = time.time()
     receivedSignal = None
-
-    while waitForConnection - time.time() < 60:
+    while time.time() - waitForConnection < 60:
         if port.in_waiting > 0: # jeśli w buforze znajdzie się jakaś dana (bajt)
             inBufferSignal = port.read(1) # odczytujemy ten bajt
             if inBufferSignal in [NAK, C]: # jeśli jest to NAK lub C, to wychodzimy z pętli
@@ -125,29 +124,116 @@ def wyslijWiadomosc(port, calaWiadomosc, typSumyKontrolnej):
 
     if receivedSignal is None:
          print("Nie otrzymano oczekiwanej odpowiedzi NAK lub C.")
+         return
 
     else:
         print("Otrzymano oczekiwany komunikat: ", receivedSignal)
 
-
+    numerBloku = 1
+    for blok in bloki:
+        blok = blok.encode('ascii')
+        nrBloku = numerBloku.to_bytes(1)
+        nrDopełnienia = (255 - numerBloku).to_bytes(1)
+        if typSumyKontrolnej: suma = sumaKontrolna(blok).to_bytes(1)
+        else: suma = algorytmCRC(blok).to_bytes(2)
+        pakiet = SOH + nrBloku + nrDopełnienia + blok + suma
+        port.write(pakiet)
+        waitForConnection = time.time()
+        time.sleep(1) # Tak by na pewno odczytać dobry znak
+        while time.time() - waitForConnection < 5: # dajemy 5 sekund na odpowiedź
+            if port.in_waiting > 0:  # jeśli w buforze znajdzie się jakaś dana (bajt)
+                receivedSignal = port.read(1)  # odczytujemy ten bajt
+                if receivedSignal == ACK:  # jeśli jest to NAK lub C, to wychodzimy z pętli
+                    # NAK - suma kontrolna, C - suma kontrolna z algorytmem CRC
+                    print("Odbiorca potwierdził poprawność, przechodzę do kolejnego bloku")
+                    numerBloku += 1
+                    break
+                elif receivedSignal == NAK:
+                    print("Odbiorca zgłosił błąd, ponawiam wysłanie bloku")
+                    port.write(pakiet)
+                elif receivedSignal == CAN:
+                    print("Odbiorca anulował transmisję...")
+                    return
+                else: print("Odbiorca odpowiedział nieoczekiwanie: " + str(receivedSignal))
+            time.sleep(0.2)
+    print("Koniec transmisji, zgłaszam to odbiorcy")
+    port.write(EOT)
+    time.sleep(1)
+    waitForConnection = time.time()
+    while time.time() - waitForConnection < 5:
+        if port.in_waiting > 0:
+            receivedSignal = port.read(1)
+            if receivedSignal == ACK:
+                print("Odbiorca potwierdził poprawne zakończenie transmisji")
+                return
+        time.sleep(0.1)
+        port.write(EOT)
+    print("Ponowne wysyłanie komunikatu nie przyniosło oczekiwanego efektu, kończę transmisję bez reakcji z drugiej strony...")
 
 def odbierzWiadomosc(port, typSumyKontrolnej):
     waitForConnection = time.time()
     receivedSignal = None
 
+    def rozpocznijTransmisję():
+        if typSumyKontrolnej: port.write(NAK)
+        else: port.write(C)
+
+    def zweryfikujSumęKontrolną(rs):
+        if typSumyKontrolnej:
+            suma = port.read(1)
+            return suma == sumaKontrolna(rs).to_bytes(1)
+        else:
+            suma = port.read(2)
+            return suma == algorytmCRC(rs).to_bytes(2)
+
     while waitForConnection - time.time() < 60:
+        rozpocznijTransmisję()
+        time.sleep(10)
         if port.in_waiting > 0:
             inBufferSignal = port.read(1)
-            if inBufferSignal in [SOH]:
+            if inBufferSignal == SOH:
                 receivedSignal = inBufferSignal
                 break
-        time.sleep(1)
+            else:
+                print("Anuluję transmisję, otrzymano nieoczekiwany komunikat: " + str(receivedSignal))
+                return
 
     if receivedSignal is None:
         print("Nie otrzymano oczekiwanej odpowiedzi SOH, zakończono oczekiwanie.")
-
+        return
     else:
         print("Otrzymano komunikat: ", receivedSignal)
+    numerBloku = 1
+    błądTransmisji = [False, ""]
+    while True:
+        błądTransmisji[0] = False
+        if port.in_waiting > 0:
+            receivedSignal = port.read(1)
+            if receivedSignal == EOT:
+                break
+            if receivedSignal != numerBloku.to_bytes(1):
+                błądTransmisji = [True, "Nieprawidłowy numer bloku!"]
+                break
+            receivedSignal = port.read(1)
+            if receivedSignal != (255 - numerBloku).to_bytes(1):
+                błądTransmisji = [True, "Nieprawidłowa liczba dopełnienia"]
+                break
+            receivedSignal = port.read(128)
+            print(str(numerBloku) + " blok - otrzymane dane: " + receivedSignal.decode('ascii', errors='ignore'))
+            if zweryfikujSumęKontrolną(receivedSignal) is False:
+                błądTransmisji = [True, "Nieprawdiłowa suma kontrolna/CRC"]
+            if błądTransmisji[0]:
+                print(błądTransmisji[1] + " - wysyłam komunikat NAK")
+                port.write(NAK)
+            else:
+                port.write(ACK)
+                print("Suma kontrolna/CRC się zgadza - wysyłam komunikat ACK")
+    if błądTransmisji[0]:
+        print("Anuluję transmisję: " + błądTransmisji[1])
+        port.write(CAN)
+    else:
+        print("Przesyłam komunikat ACK, by zakończyć transmisję")
+        port.write(ACK)
 
 
 
