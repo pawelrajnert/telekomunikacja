@@ -34,7 +34,7 @@ def odbierzWiadomosc(port):
             suma = port.read(2)                                 # bo 2 bajty - 16 bitów
             return suma == algorytmCRC(rs).to_bytes(2)          # przyrównujemy sumę kontrolną do metody weryfikującej
 
-    while waitForConnection - time.time() < 60:                 # będziemy czekać 60 sekund
+    while time.time() - waitForConnection < 60:                 # będziemy czekać 60 sekund
         rozpocznijTransmisję()                                  # przesyłamy stosowny komunikat
         time.sleep(10)                                          # czekamy 10 sekund
         if port.in_waiting > 0:                                 # odczytujemy komunikat — jeśli jest
@@ -42,8 +42,12 @@ def odbierzWiadomosc(port):
             if inBufferSignal == SOH:                           # oczekujemy SOH
                 receivedSignal = inBufferSignal
                 break
+            elif inBufferSignal == CAN:
+                print("Transmisja została anulowana przez nadawcę!")
+                port.write(CAN)
+                return
             else:
-                print("Anuluję transmisję, otrzymano nieoczekiwany komunikat: " + str(receivedSignal))
+                print("Anuluję transmisję, otrzymano nieoczekiwany komunikat: " + str(inBufferSignal))
                 port.write(CAN)
                 return
 
@@ -56,20 +60,20 @@ def odbierzWiadomosc(port):
     błądTransmisji = [False, ""]                    # tutaj przechowujemy komunikat błędu, jeśli zdecydujemy się anulować transmisję
     while True:
         if port.in_waiting > 0:                 # odczytujemy tylko wtedy, gdy mamy co
-            if błądTransmisji[0]:               # sytuacja, która wystąpi dla błędnych sum kontrolnych - przesłaliśmy NAK, nadawca musiał odpowiedzieć SOH.
+            if receivedSignal != SOH:               # odczytujemy nagłówek dla ponownego przejścia pętli
                 receivedSignal = port.read(1)
-                if receivedSignal != SOH:
+                print("Otrzymano komunikat: ", receivedSignal)
+                if receivedSignal == EOT:  # koniec transmisji, wychodzimy bez błędu.
+                    break
+                elif receivedSignal == CAN:  # na wypadek anulowania transmisji
+                    błądTransmisji = [True, "Nadawca anulował transmisję!"]
+                    break
+                elif receivedSignal != SOH:     # w innym wypadku, anulujemy transmisję
                     błądTransmisji[1] = "Nie otrzymano oczekiwanego komunikatu SOH!"
                     break
                 else: błądTransmisji[0] = False # reset flagi błędu
             receivedSignal = port.read(1)       # odczytujemy 1 bajt
-            if receivedSignal == EOT:           # koniec transmisji, wychodzimy bez błędu.
-                print("Otrzymano komunikat kończący transmisję: ", receivedSignal)
-                break
-            elif receivedSignal == CAN:             # na wypadek anulowania transmisji
-                błądTransmisji = [True, "Nadawca anulował transmisję!"]
-                break
-            if receivedSignal != numerBloku.to_bytes(1):        # jeśli nadawca nie przesłał EOT, to przesłał informacje o numerze bloku - weryfikujemy ją.
+            if receivedSignal != numerBloku.to_bytes(1):        # weryfikujemy informacje o numerze bloku
                 błądTransmisji = [True, "Nieprawidłowy numer bloku!"]
                 break
             receivedSignal = port.read(1)       # odczytujemy numer dopełnienia

@@ -47,16 +47,17 @@ def wyslijWiadomosc(port, calaWiadomosc):
         port.write(CAN)
         return
     else:
-        print("Otrzymano oczekiwany komunikat: ", receivedSignal + ", przechodzę do transmisji.")
+        print("Otrzymano oczekiwany komunikat: ", str(receivedSignal) + ", przechodzę do transmisji.")
 
     numerBloku = 1              # od 1 bloku idziemy
-    for blok in bloki:          # dla każdego bloku
-        blok = blok.encode('ascii')             # kodujemy blok na ASCII
+    for Blok in bloki:          # dla każdego bloku
+        blokBajty = Blok.encode('ascii')             # kodujemy blok na ASCII
         nrBloku = numerBloku.to_bytes(1)            # przekształcenie na bajty
         nrDopełnienia = (255 - numerBloku).to_bytes(1)       # przekształcenie na bajty
-        if typSumyKontrolnej: suma = sumaKontrolna(blok).to_bytes(1)         # przekształcenie na bajty sumy kontrolnej
-        else: suma = algorytmCRC(blok).to_bytes(2)               # przekształcenie na 2(!) bajty CRC
-        pakiet = SOH + nrBloku + nrDopełnienia + blok + suma        # utworzenie pakietu do wysłania
+        if typSumyKontrolnej: suma = sumaKontrolna(blokBajty).to_bytes(1)         # przekształcenie na bajty sumy kontrolnej
+        else: suma = algorytmCRC(blokBajty).to_bytes(2)               # przekształcenie na 2(!) bajty CRC
+        pakiet = SOH + nrBloku + nrDopełnienia + blokBajty + suma        # utworzenie pakietu do wysłania
+        print("Przesyłam blok: " + str(numerBloku) + " - " + Blok)
         port.write(pakiet)              # wysłanie pakietu
         time.sleep(1) # Dajemy czas na reakcję, by nie odczytać znaku złego znaku
         waitForConnection = time.time()
@@ -64,15 +65,15 @@ def wyslijWiadomosc(port, calaWiadomosc):
             if port.in_waiting > 0:  # jeśli w buforze znajdzie się jakaś dana (bajt)
                 receivedSignal = port.read(1)  # odczytujemy ten bajt
                 if receivedSignal == ACK:  # jeśli jest to ACK, to odbiorca zgłosił poprawność
-                    print("Odbiorca potwierdził poprawność, przechodzę do kolejnego bloku")
+                    print("Odbiorca potwierdził poprawność (ACK), przechodzę do kolejnego bloku")
                     numerBloku += 1             # kolejny blok
                     numerBloku %= 256           # bo numer bloku to liczba 8 bitowa - zakres 0-255
                     break                       # przerywamy pętle
                 elif receivedSignal == NAK:     # nastąpił błąd zgłoszony przez odbiorcę
-                    print("Odbiorca zgłosił błąd, ponawiam wysłanie bloku")
+                    print("Odbiorca zgłosił błąd (NAK), ponawiam wysłanie bloku")
                     port.write(pakiet)          # ponowne wysłanie bloku
                 elif receivedSignal == CAN:     # anulowanie transmisji
-                    print("Odbiorca anulował transmisję...")
+                    print("Odbiorca anulował transmisję (CAN)...")
                     port.write(CAN)
                     return
                 else: print("Odbiorca odpowiedział nieoczekiwanie: " + str(receivedSignal)) # dla nieoczekiwanych komunikatów
@@ -85,8 +86,9 @@ def wyslijWiadomosc(port, calaWiadomosc):
         if port.in_waiting > 0:  # jeśli w buforze znajdzie się jakaś dana (bajt)
             receivedSignal = port.read(1)       # odczytujemy ten bajt
             if receivedSignal == ACK:           # oczekujemy na ACK - potwierdzenie zakończenia transmisji
-                print("Odbiorca potwierdził poprawne zakończenie transmisji")
+                print("Odbiorca potwierdził poprawne zakończenie transmisji (ACK)")
                 return
         time.sleep(0.1)         # co 0.1 sekundy ponawiamy komunikat o końcu transmisji
+        print("Ponawiam przesłanie EOT...")
         port.write(EOT)
     print("Ponowne wysyłanie komunikatu nie przyniosło oczekiwanego efektu, kończę transmisję bez reakcji z drugiej strony...")
