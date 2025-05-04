@@ -174,9 +174,10 @@ cython_debug/
 .pypirc
 .DS_Store
 
-# Sprawozdania
+# Sprawozdania, pliki do zadań
 *.doc
 *.docx
 *.pdf
 *.zip
 *.txt
+*.json

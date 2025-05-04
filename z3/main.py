@@ -1,48 +1,43 @@
-from queue import PriorityQueue
-from Nodes import Node
+from mainMethods import *
 
-def countLetters(text):
-    tmp = list(text)
-    tmp.sort()
-    text = ''.join(tmp)
-    tmp.clear()
-    pom = 0
-    result = {}
-    for i in range(0, len(text)):
-        pom += 1
-        if i == len(text) - 1:
-            result[text[i]] = pom
-        elif text[i] != text[i + 1]:
-            result[text[i]] = pom
-            pom = 0
-    return result
-
-def prepareTree(text):
-    letterOccurrences = countLetters(text)
-    nodes = PriorityQueue()
-    for l in letterOccurrences:
-        node = Node(letterOccurrences[l], l)
-        nodes.put(node)
-    while not nodes.empty():
-        element = nodes.get()
-        print(element.letter)
+inputText = ""
+letterCodes = {}
+encodedText = ""
+decodedText = ""
 
 while True:
+    print("0 - wyczyść zmienne")
     print("1 - Wprowadź tekst do zakodowania")
-    print("2 - Zakoduj plik tekstowy")
-    print("3 - Prześlij plik")
-    print("4 - Odbierz plik")
+    print("2 - Wprowadź tekst z plik tekstowego do zakodowania")
+    print("3 - Utwórz słownik kodów dla wprowadzonych danych wejściowych i zakoduj tekst")
+    print("4 - Odkoduj dane")
+    print("5 - Porównaj odkodowany tekst z wprowadzonym")
+    print("6 - Zapisz zakodowany tekst do pliku")
+    print("7 - Wczytaj zakodowany tekst z pliku wraz ze słownikiem do odkodowania")
+    print("8 - Nadaj wiadomość")
+    print("9 - Odbierz wiadomość")
     print("Inna opcja - zakończ program")
-    wybor = input("Wybor: ")
-    if wybor == "1":
-        tekst = input("Wpisz tekst do zakodowania: ")
-        prepareTree(tekst)
-    elif wybor == "2":
-        print("2")
-    elif wybor == "3":
-        print("3")
-    elif wybor == "4":
-        print("4")
+    choice = input("Wybor: ")
+    if choice == "0":
+        inputText, letterCodes, encodedText, decodedText = "", {}, "", ""
+    elif choice == "1":
+        inputText = input("Wpisz tekst do zakodowania: ")
+    elif choice == "2":
+        inputText = readTextFile()
+    elif choice == "3":
+        letterCodes, encodedText = encodeData(inputText)
+    elif choice == "4":
+        decodedText = decodeData(letterCodes, encodedText)
+    elif choice == "5":
+        compareTexts(inputText, decodedText)
+    elif choice == "6":
+        saveData(letterCodes, encodedText)
+    elif choice == "7":
+        letterCodes, encodedText = readData()
+    elif choice == "8":
+        print("TODO")
+    elif choice == "9":
+        print("TODO")
     else:
-        break;
-    input("Wciśnij enter by kontynuować")
+        break
+    input("Aby kontynuować, naciśnij enter...")
