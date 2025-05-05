@@ -6,9 +6,10 @@ encodedText = ""
 decodedText = ""
 
 while True:
-    print("0 - wyczyść zmienne")
+    print("Wybierz opcję: ")
+    print("0 - Wyczyść zmienne")
     print("1 - Wprowadź tekst do zakodowania")
-    print("2 - Wprowadź tekst z plik tekstowego do zakodowania")
+    print("2 - Wprowadź tekst z pliku tekstowego do zakodowania")
     print("3 - Utwórz słownik kodów dla wprowadzonych danych wejściowych i zakoduj tekst")
     print("4 - Odkoduj dane")
     print("5 - Porównaj odkodowany tekst z wprowadzonym")
@@ -19,7 +20,7 @@ while True:
     print("10 - Odbierz wiadomość z innego komputera")
     print("11 - Wypisz na ekran stan zmiennych programu")
     print("Inna opcja - zakończ program")
-    choice = input("Wybor: ")
+    choice = input("Wybór: ")
     if choice == "0":
         inputText, letterCodes, encodedText, decodedText = "", {}, "", ""
     elif choice == "1":

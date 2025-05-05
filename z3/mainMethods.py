@@ -3,6 +3,7 @@ from codeMethods import *
 import json
 import socket
 
+
 def readTextFile():
     file = input("Podaj nazwę pliku txt (bez rozszerzenia), z którego odczytamy tekst: ")
     path = f"pliki tekstowe/{file}.txt"
@@ -96,6 +97,7 @@ def readData():
     except Exception as e:
         print("Wystąpiły nieoczekiwane błędy przy odczycie - " + str(e))
 
+
 def saveText(decodedText):
     if decodedText != "":
         try:
@@ -132,6 +134,7 @@ def sendData(letterCodes, encodedText):
     else:
         print("Brak wystarczających danych do przesłania!")
 
+
 def receiveData():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = None
@@ -152,6 +155,7 @@ def receiveData():
         decodedData = json.loads(data.decode("utf-8"))
         letterCodes = decodedData["codes"]
         encodedText = decodedData["text"]
+        print("Odebrano dane z drugiego komputera!")
         return letterCodes, encodedText
     except socket.error as e:
         print("Wystąpił błąd z gniazdem: " + str(e))
@@ -162,4 +166,3 @@ def receiveData():
     finally:
         conn.close()
         s.close()
-

@@ -7,11 +7,13 @@ def encodeLetters(letters, node, code):
     encodeLetters(letters, node.rightChild, code + "1")
     return letters
 
+
 def encodeText(text, code):
     result = ""
     for letter in text:
         result += code[letter]
     return result
+
 
 def decodeText(encodedText, code):
     reversedCode = {}
