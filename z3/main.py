@@ -14,8 +14,10 @@ while True:
     print("5 - Porównaj odkodowany tekst z wprowadzonym")
     print("6 - Zapisz zakodowany tekst do pliku")
     print("7 - Wczytaj zakodowany tekst z pliku wraz ze słownikiem do odkodowania")
-    print("8 - Nadaj wiadomość")
-    print("9 - Odbierz wiadomość")
+    print("8 - Zapisz odkodowany tekst do pliku")
+    print("9 - Nadaj wiadomość na inny komputer")
+    print("10 - Odbierz wiadomość z innego komputera")
+    print("11 - Wypisz na ekran stan zmiennych programu")
     print("Inna opcja - zakończ program")
     choice = input("Wybor: ")
     if choice == "0":
@@ -35,9 +37,16 @@ while True:
     elif choice == "7":
         letterCodes, encodedText = readData()
     elif choice == "8":
-        print("TODO")
+        saveText(decodedText)
     elif choice == "9":
-        print("TODO")
+        sendData(letterCodes, encodedText)
+    elif choice == "10":
+        letterCodes, encodedText = receiveData()
+    elif choice == "11":
+        print("Wprowadzony tekst: ", inputText)
+        print("Kody: ", letterCodes)
+        print("Zakodowany tekst: ", encodedText)
+        print("Odkodowany tekst: ", decodedText)
     else:
         break
     input("Aby kontynuować, naciśnij enter...")

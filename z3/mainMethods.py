@@ -1,11 +1,11 @@
 from treePreparation import *
 from codeMethods import *
 import json
-
+import socket
 
 def readTextFile():
-    file = input("Podaj nazwę pliku (z rozszerzeniem), z którego odczytamy tekst: ")
-    path = f"pliki tekstowe/{file}"
+    file = input("Podaj nazwę pliku txt (bez rozszerzenia), z którego odczytamy tekst: ")
+    path = f"pliki tekstowe/{file}.txt"
     try:
         openFile = open(path, "r")
         inputText = openFile.read()
@@ -49,7 +49,7 @@ def compareTexts(inputText, decodedText):
         if inputText == "":
             print("Nie jestem w stanie porównać, wprowadzono zakodowany tekst z pliku!")
         elif inputText == decodedText:
-            print("Poprawnie odkodowano tekst!")
+            print("Wprowadzony tekst i odkodowany są takie same!")
         else:
             print("Odkodowany tekst jest inny, niż aktualnie wprowadzony")
             print("Wprowadzony tekst - " + inputText)
@@ -95,3 +95,71 @@ def readData():
         print("Błąd odczytu danych - niepoprawny format JSON")
     except Exception as e:
         print("Wystąpiły nieoczekiwane błędy przy odczycie - " + str(e))
+
+def saveText(decodedText):
+    if decodedText != "":
+        try:
+            fileName = input("Podaj nazwę pliku do zapisu (bez rozszerzenia): ")
+            path = f"odkodowane/{fileName}.txt"
+            with open(path, "w") as file:
+                file.write(decodedText)
+                file.close()
+        except Exception as e:
+            print("Wystąpiły nieoczekiwane błędy przy zapisie - " + str(e))
+    else:
+        print("Nie można zapisać - brak odkodowanego tekstu!")
+
+
+def sendData(letterCodes, encodedText):
+    if encodedText != "" and letterCodes != {}:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            ip = input("Podaj ip odbiorcy: ")
+            port = int(input("Podaj port odbiorcy: "))
+            s.connect((ip, int(port)))
+            data = {
+                "text": encodedText,
+                "codes": letterCodes
+            }
+            s.sendall(json.dumps(data).encode("utf-8"))
+            print("Przesłano dane!")
+        except socket.error as e:
+            print("Wystąpił błąd z gniazdem: " + str(e))
+        except Exception as e:
+            print("Wystąpił nieoczekiwany błąd: " + str(e))
+        finally:
+            s.close()
+    else:
+        print("Brak wystarczających danych do przesłania!")
+
+def receiveData():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn = None
+    try:
+        port = int(input("Podaj port nasłuchiwania: "))
+        s.bind(("0.0.0.0", port))
+        s.listen(1)
+        print("Oczekuje na dane na porcie: " + str(port))
+
+        conn, addr = s.accept()
+        print("Połączono z: " + str(addr))
+        data = b""
+        while True:
+            receivedBytes = conn.recv(1024)
+            if not receivedBytes:
+                break
+            data += receivedBytes
+        decodedData = json.loads(data.decode("utf-8"))
+        letterCodes = decodedData["codes"]
+        encodedText = decodedData["text"]
+        return letterCodes, encodedText
+    except socket.error as e:
+        print("Wystąpił błąd z gniazdem: " + str(e))
+    except json.decoder.JSONDecodeError as e:
+        print("Błąd odczytu danych - niepoprawny format JSON: " + str(e))
+    except Exception as e:
+        print("Wystąpił nieoczekiwany błąd: " + str(e))
+    finally:
+        conn.close()
+        s.close()
+
