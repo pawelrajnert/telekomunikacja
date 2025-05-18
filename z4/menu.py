@@ -23,7 +23,11 @@ def setValues(initializing):
         print("Jeśli chcesz pozostawić stare wartości, nie wprowadzaj nic - po prostu wciśnij enter")
     length = valueValidator("Podaj czas nagrania w sekundach: ")
     sampleRate = valueValidator("Podaj częstotliwość próbkowania (Hz): ")
-    return length, sampleRate
+    while True:
+        bitsNumber = valueValidator("Podaj ilość bitów kwantyzacji (8/16/24/32): ")
+        if bitsNumber in (8, 16, 24, 32):
+            break
+    return length, sampleRate, bitsNumber
 
 
 def menu():
@@ -36,8 +40,8 @@ def menu():
     print(
         f"Odtwarzacz: {usedSpeaker['name']}, "
         f"domyślna częstotliwość próbkowania: {int(usedSpeaker['default_samplerate'])} Hz")
-    recordings = []
-    l, sr = setValues(True)
+    recordings = {}
+    l, sr, bits = setValues(True)
     while True:
         print("1. Nagraj dźwięk")
         print("2. Odtwórz dźwięk")
@@ -46,21 +50,21 @@ def menu():
         choice = input("Wybierz operację: ")
         if choice == "1":
             ID = len(recordings) + 1
-            r = recordSound(l, sr, ID, 8)
+            r = recordSound(l, sr, ID, bits)
             if r is None:
                 print(f"Z uwagi na błąd, wymuszam zmianę częstotliwości próbkowania na domyślną wartość mikrofonu "
                       f"{usedMicrophone['name']}: {int(usedMicrophone['default_samplerate'])} Hz")
                 sr = int(usedMicrophone['default_samplerate'])
-            recordings.append(r)
+            else:
+                data, name = r
+                recordings[name] = data
         elif choice == "2":
             recordingToDelete = chooseRecordingAndPlay(recordings, sr)
             if recordingToDelete is not None:
                 print("Z uwagi na błąd, usuwam nagranie z listy nagrań...")
                 recordings.remove(recordingToDelete)
         elif choice == "3":
-            print("not implemented.")
+            recordings = loadAudio(recordings)
         elif choice == "4":
-            print(l, sr)
-            newL, newSr = setValues(False)
-            l, sr = newL or l, newSr or sr
-            print(l, sr)
+            newL, newSr, newBits = setValues(False)
+            l, sr, bits = newL or l, newSr or sr, newBits or bits

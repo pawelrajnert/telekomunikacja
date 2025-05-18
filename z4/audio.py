@@ -8,12 +8,12 @@ def recordSound(recordingLength, sampleRate, ID, bits):
         recording = sd.rec(frames=int(recordingLength * sampleRate), samplerate=sampleRate, channels=1, dtype='float32')
         sd.wait()
         print("Zakończono nagrywanie")
-        recordingName = f"recording_{ID}_{recordingLength}s_{sampleRate}Hz"
+        recordingName = f"recording_{ID}_{recordingLength}s_{bits}_{sampleRate}Hz"
         print("Czy chcesz zapisać nagranie do katalogu? (t/n)")
         while True:
             choice = input().strip().lower()
             if choice == "t" or choice == "T":
-                saveToFile(recording, recordingName, sampleRate, 8)
+                saveToFile(recording, recordingName, sampleRate, bits)
                 break
             elif choice == "n" or choice == "N":
                 break
