@@ -46,7 +46,7 @@ def menu():
         choice = input("Wybierz operację: ")
         if choice == "1":
             ID = len(recordings) + 1
-            r = recordSound(l, sr, ID)
+            r = recordSound(l, sr, ID, 8)
             if r is None:
                 print(f"Z uwagi na błąd, wymuszam zmianę częstotliwości próbkowania na domyślną wartość mikrofonu "
                       f"{usedMicrophone['name']}: {int(usedMicrophone['default_samplerate'])} Hz")

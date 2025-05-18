@@ -1,7 +1,8 @@
 import sounddevice as sd
+from file import *
 
 
-def recordSound(recordingLength, sampleRate, ID):
+def recordSound(recordingLength, sampleRate, ID, bits):
     try:
         print(f"Rozpoczęto nagrywanie, czas nagrania: {recordingLength}s")
         recording = sd.rec(frames=int(recordingLength * sampleRate), samplerate=sampleRate, channels=1, dtype='float32')
@@ -12,7 +13,7 @@ def recordSound(recordingLength, sampleRate, ID):
         while True:
             choice = input().strip().lower()
             if choice == "t" or choice == "T":
-                print("Not Implemented.")
+                saveToFile(recording, recordingName, sampleRate, 8)
                 break
             elif choice == "n" or choice == "N":
                 break

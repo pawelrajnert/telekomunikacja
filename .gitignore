@@ -181,3 +181,4 @@ cython_debug/
 *.zip
 *.txt
 *.json
+*.wav
