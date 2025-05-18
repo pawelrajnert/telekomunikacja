@@ -46,7 +46,7 @@ def menu():
         print("1. Nagraj dźwięk")
         print("2. Odtwórz dźwięk")
         print("3. Wczytaj pliki z dźwiękami z katalogu")
-        print("4. Zmień czas/częstotliwość próbkowania")
+        print("4. Zmień czas/częstotliwość/bity próbkowania")
         choice = input("Wybierz operację: ")
         if choice == "1":
             ID = len(recordings) + 1
