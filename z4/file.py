@@ -5,7 +5,7 @@ import soundfile as sf
 def saveToFile(recording, name, sampleRate, bits):
     try:
         os.makedirs("nagrania", exist_ok=True)
-        path = f"nagrania/{name}.wav"
+        path = f"nagrania/{name}"
         types = {
             8: 'PCM_U8',
             16: 'PCM_16',
