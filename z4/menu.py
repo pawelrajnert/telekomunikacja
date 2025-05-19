@@ -1,4 +1,5 @@
 from audio import *
+from snr import snrFunction
 
 
 def setValues(initializing):
@@ -47,6 +48,8 @@ def menu():
         print("2. Odtwórz dźwięk")
         print("3. Wczytaj pliki z dźwiękami z katalogu")
         print("4. Zmień czas/częstotliwość/bity próbkowania")
+        print("5. Oblicz SNR")
+        print("Inna opcja - koniec programu")
         choice = input("Wybierz operację: ")
         if choice == "1":
             ID = len(recordings) + 1
@@ -68,3 +71,7 @@ def menu():
         elif choice == "4":
             newL, newSr, newBits = setValues(False)
             l, sr, bits = newL or l, newSr or sr, newBits or bits
+        elif choice == "5":
+            snrFunction(recordings)
+        else:
+            return

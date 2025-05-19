@@ -16,7 +16,4 @@ This repository contains assignments from the course “Telecommunication and Si
 - [x] Zadanie 1- korekcja błędów transmisji
 - [x] Zadanie 2- protokół XModem
 - [x] Zadanie 3- algorytm kodowania Huffmana
-
-### Do zrobienia:
-- [ ] Zadanie 4- przetwornik A/C i C/A
-
+- [x] Zadanie 4- przetwornik A/C i C/A
