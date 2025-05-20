@@ -62,7 +62,7 @@ def menu():
                 data, name = r
                 recordings[name] = data
         elif choice == "2":
-            recordingToDelete = chooseRecordingAndPlay(recordings, sr)
+            recordingToDelete = chooseRecordingAndPlay(recordings)
             if recordingToDelete is not None:
                 print("Z uwagi na błąd, usuwam nagranie z listy nagrań...")
                 recordings.pop(recordingToDelete, None)

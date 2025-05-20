@@ -25,7 +25,10 @@ def recordSound(recordingLength, sampleRate, ID, bits):
         return None
 
 
-def playSound(recording, sampleRate):
+def playSound(recording, name):
+    name = name[:-6]
+    nameParts = name.split("_")
+    sampleRate = int(nameParts[4])
     try:
         print("Odtwarzam nagranie...")
         sd.play(recording, sampleRate)
@@ -37,7 +40,7 @@ def playSound(recording, sampleRate):
         return True
 
 
-def chooseRecordingAndPlay(recs, rate):
+def chooseRecordingAndPlay(recs):
     names = list(recs.keys())
     if len(recs) > 0:
 
@@ -52,7 +55,7 @@ def chooseRecordingAndPlay(recs, rate):
             choice = int(input().strip().lower())
             if 1 <= choice <= len(recs):
                 name = names[choice - 1]
-                errorHasOccurred = playSound(recs[name], rate)
+                errorHasOccurred = playSound(recs[name], name)
                 if errorHasOccurred:
                     return name
                 else:
