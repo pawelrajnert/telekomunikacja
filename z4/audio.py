@@ -38,10 +38,12 @@ def playSound(recording, sampleRate):
 
 
 def chooseRecordingAndPlay(recs, rate):
+    names = list(recs.keys())
     if len(recs) > 0:
+
         print("Wybierz numer z listy nagrań: ")
-        for i, rec in enumerate(recs):
-            print(f"{i + 1}. - " + recs[i][1])
+        for i, name in enumerate(names):
+            print(f"{i + 1}. - " + name)
     else:
         print("Lista nagrań jest pusta!")
         return None
@@ -49,10 +51,10 @@ def chooseRecordingAndPlay(recs, rate):
         try:
             choice = int(input().strip().lower())
             if 1 <= choice <= len(recs):
-                rec = recs[choice - 1]
-                errorHasOccurred = playSound(rec[0], rate)
+                name = names[choice - 1]
+                errorHasOccurred = playSound(recs[name], rate)
                 if errorHasOccurred:
-                    return rec
+                    return name
                 else:
                     return None
             else:

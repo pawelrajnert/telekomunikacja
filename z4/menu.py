@@ -65,7 +65,7 @@ def menu():
             recordingToDelete = chooseRecordingAndPlay(recordings, sr)
             if recordingToDelete is not None:
                 print("Z uwagi na błąd, usuwam nagranie z listy nagrań...")
-                recordings.remove(recordingToDelete)
+                recordings.pop(recordingToDelete, None)
         elif choice == "3":
             recordings = loadAudio(recordings)
         elif choice == "4":
