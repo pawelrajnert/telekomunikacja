@@ -43,6 +43,8 @@ def calculateSNR(baseSignal, testSignal):
     basePower = np.mean(baseSignal ** 2)            # obliczenie x ze wzoru
     noisePower = np.mean(noise ** 2)                # obliczenie y ze wzoru
 
-    if noisePower == 0: return np.inf
-    snr = 10 * np.log10(basePower / noisePower)
+    try:
+        snr = 10 * np.log10(basePower / noisePower)
+    except ZeroDivisionError:
+        return np.inf
     return snr
